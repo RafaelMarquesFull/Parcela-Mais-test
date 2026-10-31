@@ -7,7 +7,7 @@ import { escolherOferta } from '@/services/consultas.api'
 import { PainelFinanceiras } from './components/PainelFinanceiras'
 import { useConsulta } from './hooks/useConsulta'
 
-export const rotaNovaConsulta = '/'
+export const rotaNovaConsulta = '/consultas/nova'
 
 export function ConsultaPage() {
   const { id = '' } = useParams()

@@ -12,7 +12,7 @@ export function CardFinanceira({ resultado }: { resultado: ResultadoSnapshot }) 
     <Card className="card-status" data-status={resultado.status}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-base">{nomeFinanceira[resultado.financeira]}</CardTitle>
-        <StatusFinanceira status={resultado.status} />
+        <StatusFinanceira key={resultado.status} status={resultado.status} />
       </CardHeader>
       <CardContent className="text-sm text-muted-foreground">
         {resultado.status === 'consultando' && <p>Aguardando resposta…</p>}

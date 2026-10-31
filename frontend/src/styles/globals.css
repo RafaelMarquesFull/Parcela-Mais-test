@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
+@import "../app/theme/tokens.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -127,4 +128,69 @@
   html {
     @apply font-sans;
     }
+}
+@layer base {
+  body {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    transition: background-color 200ms cubic-bezier(0.2, 0, 0, 1), color 200ms cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .passo-entrar {
+    animation: passo-entrar 160ms cubic-bezier(0.2, 0, 0, 1) both;
+  }
+
+  .status-trocar {
+    animation: status-trocar 180ms cubic-bezier(0.2, 0, 0, 1) both;
+  }
+
+  .oferta-entrar {
+    animation: oferta-entrar 220ms cubic-bezier(0.2, 0, 0, 1) both;
+    animation-delay: calc(min(var(--i, 0), 8) * 40ms);
+  }
+
+  .card-status {
+    transition: border-color 200ms cubic-bezier(0.2, 0, 0, 1);
+  }
+}
+
+.card-status[data-status='aprovada'] {
+  border-color: color-mix(in oklch, oklch(0.6 0.15 160) 45%, var(--border));
+}
+
+@keyframes passo-entrar {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes status-trocar {
+  from {
+    opacity: 0.4;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes oferta-entrar {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

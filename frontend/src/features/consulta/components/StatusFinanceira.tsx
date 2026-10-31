@@ -15,7 +15,7 @@ const icone: Record<StatusResultado, typeof Loader2> = { consultando: Loader2, a
 export function StatusFinanceira({ status }: { status: StatusResultado }) {
   const Icone = icone[status]
   return (
-    <Badge variant="secondary" className={`gap-1 border-transparent ${estilo[status]}`}>
+    <Badge variant="secondary" className={`status-trocar gap-1 border-transparent ${estilo[status]}`}>
       <Icone className={status === 'consultando' ? 'animate-spin' : ''} />
       {rotuloStatus[status]}
     </Badge>
