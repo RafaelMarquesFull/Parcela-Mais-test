@@ -15,7 +15,10 @@
     "test": "npm test --workspaces --if-present",
     "test:backend": "npm test -w backend",
     "test:frontend": "npm test -w frontend",
-    "test:watch": "npm run test:watch -w backend"
+    "test:watch": "npm run test:watch -w backend",
+    "test:load": "docker run --rm -i -e BASE_URL -e DURACAO -e DEGRAU -v \"$PWD/backend/test/load:/scripts\" grafana/k6 run /scripts/load.js",
+    "test:stress": "docker run --rm -i -e BASE_URL -e DURACAO -e DEGRAU -v \"$PWD/backend/test/load:/scripts\" grafana/k6 run /scripts/stress.js",
+    "test:spike": "docker run --rm -i -e BASE_URL -e DURACAO -e DEGRAU -v \"$PWD/backend/test/load:/scripts\" grafana/k6 run /scripts/spike.js"
   },
   "allowScripts": {
     "esbuild@0.28.2": true

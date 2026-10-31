@@ -14,7 +14,7 @@ export function criarApp(opcoes: { env: Env; container: Container }) {
   registrarErrorHandler(app)
   registrarAutenticacao(app, container)
   app.register(cors, { origin: env.ORIGEM_FRONT, credentials: true })
-  app.register(registrarRateLimit)
+  app.register(registrarRateLimit, { max: env.RATE_LIMIT_MAX })
   app.register(configRoutes, { env })
   app.register(consultasRoutes, { container })
   return app

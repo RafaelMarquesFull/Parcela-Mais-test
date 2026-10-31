@@ -7,6 +7,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
   SIMULACAO_CENARIOS: booleano.default('false'),
   LIMITE_CONCORRENCIA: z.coerce.number().int().positive().default(5),
+  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
   JWT_SECRET: z.string().min(1),
   ORIGEM_FRONT: z.string().url().default('http://localhost:5173'),
 })
