@@ -1,4 +1,4 @@
-import type { CadastroInput, ConsultaResumo, ConsultaSnapshot, EscolhaInput, EscolhaSnapshot } from 'shared'
+import type { CadastroInput, ConsultaSnapshot, EscolhaInput, EscolhaSnapshot, ListagemInput, MetricasConsultas, PaginaConsultas } from 'shared'
 import { BASE_URL, obterToken, requisitar } from './http'
 
 export function criarConsulta(entrada: CadastroInput, chave: string): Promise<{ id: string }> {
@@ -9,8 +9,14 @@ export function obterConsulta(id: string): Promise<ConsultaSnapshot> {
   return requisitar(`/consultas/${id}`)
 }
 
-export function listarConsultas(): Promise<ConsultaResumo[]> {
-  return requisitar('/consultas')
+export function listarConsultas(filtro: ListagemInput): Promise<PaginaConsultas> {
+  const parametros = new URLSearchParams({ pagina: String(filtro.pagina), porPagina: String(filtro.porPagina) })
+  if (filtro.busca) parametros.set('busca', filtro.busca)
+  return requisitar(`/consultas?${parametros}`)
+}
+
+export function obterMetricas(): Promise<MetricasConsultas> {
+  return requisitar('/consultas/metricas')
 }
 
 export function escolherOferta(id: string, entrada: EscolhaInput): Promise<EscolhaSnapshot> {

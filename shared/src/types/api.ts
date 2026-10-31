@@ -44,6 +44,16 @@ export type ConsultaResumo = {
   criadaEm: string
 }
 
+export type PaginaConsultas = { itens: ConsultaResumo[]; total: number; pagina: number; porPagina: number }
+
+export type MetricasConsultas = {
+  consultasHoje: number
+  consultasOntem: number
+  finalizadas: number
+  comCredito: number
+  volumeSolicitado: number
+}
+
 export type EventoResultado = { tipo: 'resultado'; resultado: ResultadoSnapshot }
 export type EventoFinalizada = { tipo: 'consulta-finalizada'; status: StatusConsulta; finalizadaEm: string }
 export type EventoConsulta = EventoResultado | EventoFinalizada

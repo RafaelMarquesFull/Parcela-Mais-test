@@ -5,6 +5,7 @@ import { EscolherOferta } from './application/consultas/escolher-oferta'
 import { FinalizarConsultasPresas } from './application/consultas/finalizar-consultas-presas'
 import { ListarConsultas } from './application/consultas/listar-consultas'
 import { ObterConsulta } from './application/consultas/obter-consulta'
+import { ObterMetricas } from './application/consultas/obter-metricas'
 import { OrquestradorDeConsulta } from './application/consultas/orquestrar-consulta'
 import { Autenticar } from './application/auth/autenticar'
 import { EncerrarSessao } from './application/auth/encerrar-sessao'
@@ -73,6 +74,7 @@ export function criarContainer(opcoes: Opcoes) {
     finalizarConsultasPresas: new FinalizarConsultasPresas({ consultas, eventos, relogio, prazoMs: PRAZO_CONSULTA_MS }),
     obterConsulta: new ObterConsulta(consultas, pacientes),
     listarConsultas: new ListarConsultas(consultas),
+    obterMetricas: new ObterMetricas(consultas, relogio),
     escolherOferta: new EscolherOferta(consultas),
     emissor,
     autenticar: new Autenticar(sessao),

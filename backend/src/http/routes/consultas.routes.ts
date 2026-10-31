@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { cadastroSchema, escolhaSchema } from 'shared'
+import { cadastroSchema, escolhaSchema, listagemSchema } from 'shared'
 import type { Container } from '../../container'
 import { apresentarResultado } from '../../application/consultas/calcular-ofertas'
 import { chaveIdempotencia, exigirIdempotencia } from '../plugins/idempotency'
@@ -17,7 +17,9 @@ export async function consultasRoutes(app: FastifyInstance, opcoes: { container:
     return reply.code(202).send({ id })
   })
 
-  app.get('/consultas', async request => container.listarConsultas.executar(request.usuario.id))
+  app.get('/consultas', async request => container.listarConsultas.executar(request.usuario.id, listagemSchema.parse(request.query)))
+
+  app.get('/consultas/metricas', async request => container.obterMetricas.executar(request.usuario.id))
 
   app.get<{ Params: { id: string } }>('/consultas/:id', async request => {
     return apresentarConsulta(await container.obterConsulta.executar(request.params.id, request.usuario.id))

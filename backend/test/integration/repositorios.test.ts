@@ -67,9 +67,10 @@ describe('PrismaConsultaRepositorio', () => {
     const { consulta } = await novaConsulta()
     await consultas.gravarResultado({ consultaId: consulta.id, financeira: 'alfa', status: 'aprovada', motivo: null, valorAprovado: 1, taxaMensal: 1, prazos: [6], duracaoMs: 1, respondidoEm: new Date() })
     await consultas.gravarResultado({ consultaId: consulta.id, financeira: 'gama', status: 'recusada', motivo: 'regra', valorAprovado: null, taxaMensal: null, prazos: [], duracaoMs: 1, respondidoEm: new Date() })
-    const lista = await consultas.listar(usuarioSemeado.id)
-    expect(lista[0]).toMatchObject({ id: consulta.id, pacienteNome: 'Ana', aprovadas: 1, valorTratamento: 800_000 })
-    expect(typeof lista[0]?.criadaEm).toBe('string')
+    const { itens, total } = await consultas.listar(usuarioSemeado.id, { pagina: 1, porPagina: 5 })
+    expect(total).toBeGreaterThan(0)
+    expect(itens[0]).toMatchObject({ id: consulta.id, pacienteNome: 'Ana', aprovadas: 1, valorTratamento: 800_000 })
+    expect(typeof itens[0]?.criadaEm).toBe('string')
   })
 })
 

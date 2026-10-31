@@ -37,6 +37,6 @@ describe('GET /consultas/:id', () => {
   it('GET /consultas lista resumos', async () => {
     const res = await ctx.app.inject({ method: 'GET', url: '/consultas', headers: ctx.auth })
     expect(res.statusCode).toBe(200)
-    expect(res.json()[0]).toMatchObject({ pacienteNome: 'Ana Souza', valorTratamento: 800_000 })
+    expect(res.json().itens[0]).toMatchObject({ pacienteNome: 'Ana Souza', valorTratamento: 800_000 })
   })
 })

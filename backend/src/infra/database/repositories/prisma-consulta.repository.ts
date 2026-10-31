@@ -1,10 +1,10 @@
 import type { PrismaClient } from '@prisma/client'
-import type { ConsultaResumo, NomeFinanceira } from 'shared'
+import type { MetricasConsultas, NomeFinanceira } from 'shared'
 import type { Consulta, NovaConsulta } from '../../../domain/entities/consulta'
 import type { Escolha, NovaEscolha } from '../../../domain/entities/escolha'
 import type { NovoResultado, ResultadoFinanceira } from '../../../domain/entities/resultado-financeira'
 import type { NovoPaciente } from '../../../domain/entities/paciente'
-import type { ConsultaCriada, ConsultaRepositorio } from '../../../domain/ports/consulta.repository'
+import type { ConsultaCriada, ConsultaRepositorio, FiltroListagem, JanelaMetricas, ListaPaginada } from '../../../domain/ports/consulta.repository'
 import { paraPaciente } from '../mappers/paciente.mapper'
 import { paraConsulta } from '../mappers/consulta.mapper'
 import { paraEscolha } from '../mappers/escolha.mapper'
@@ -44,13 +44,19 @@ export class PrismaConsultaRepositorio implements ConsultaRepositorio {
     return linhas.map(paraConsulta)
   }
 
-  async listar(usuarioId: string): Promise<ConsultaResumo[]> {
-    const linhas = await this.prisma.consulta.findMany({
-      where: { usuarioId },
-      orderBy: { criadaEm: 'desc' },
-      include: { paciente: { select: { nome: true } }, resultados: { select: { status: true } } },
-    })
-    return linhas.map(linha => ({
+  async listar(usuarioId: string, filtro: FiltroListagem): Promise<ListaPaginada> {
+    const where = { usuarioId, ...(filtro.busca ? { paciente: { nome: { contains: filtro.busca } } } : {}) }
+    const [linhas, total] = await Promise.all([
+      this.prisma.consulta.findMany({
+        where,
+        orderBy: { criadaEm: 'desc' },
+        skip: (filtro.pagina - 1) * filtro.porPagina,
+        take: filtro.porPagina,
+        include: { paciente: { select: { nome: true } }, resultados: { select: { status: true } } },
+      }),
+      this.prisma.consulta.count({ where }),
+    ])
+    const itens = linhas.map(linha => ({
       id: linha.id,
       pacienteNome: linha.paciente.nome,
       valorTratamento: linha.valorTratamento,
@@ -58,6 +64,18 @@ export class PrismaConsultaRepositorio implements ConsultaRepositorio {
       aprovadas: linha.resultados.filter(r => r.status === 'aprovada').length,
       criadaEm: linha.criadaEm.toISOString(),
     }))
+    return { itens, total }
+  }
+
+  async metricas(usuarioId: string, janela: JanelaMetricas): Promise<MetricasConsultas> {
+    const [consultasHoje, consultasOntem, finalizadas, comCredito, volume] = await Promise.all([
+      this.prisma.consulta.count({ where: { usuarioId, criadaEm: { gte: janela.inicioHoje } } }),
+      this.prisma.consulta.count({ where: { usuarioId, criadaEm: { gte: janela.inicioOntem, lt: janela.inicioHoje } } }),
+      this.prisma.consulta.count({ where: { usuarioId, status: 'finalizada' } }),
+      this.prisma.consulta.count({ where: { usuarioId, status: 'finalizada', resultados: { some: { status: 'aprovada' } } } }),
+      this.prisma.consulta.aggregate({ where: { usuarioId }, _sum: { valorTratamento: true } }),
+    ])
+    return { consultasHoje, consultasOntem, finalizadas, comCredito, volumeSolicitado: volume._sum.valorTratamento ?? 0 }
   }
 
   async resultados(consultaId: string): Promise<ResultadoFinanceira[]> {

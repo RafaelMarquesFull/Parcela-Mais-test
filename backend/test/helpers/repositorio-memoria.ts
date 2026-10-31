@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto'
-import type { ConsultaResumo, NomeFinanceira } from 'shared'
+import type { ConsultaResumo, MetricasConsultas, NomeFinanceira } from 'shared'
 import type { Consulta, NovaConsulta } from '../../src/domain/entities/consulta'
 import type { Escolha, NovaEscolha } from '../../src/domain/entities/escolha'
 import type { NovoPaciente, Paciente } from '../../src/domain/entities/paciente'
 import type { NovoResultado, ResultadoFinanceira } from '../../src/domain/entities/resultado-financeira'
-import type { ConsultaCriada, ConsultaRepositorio } from '../../src/domain/ports/consulta.repository'
+import type { ConsultaCriada, ConsultaRepositorio, FiltroListagem, JanelaMetricas, ListaPaginada } from '../../src/domain/ports/consulta.repository'
 import type { PacienteRepositorio } from '../../src/domain/ports/paciente.repository'
 import type { NovoRefreshToken, RefreshToken } from '../../src/domain/entities/refresh-token'
 import type { Usuario } from '../../src/domain/entities/usuario'
@@ -45,9 +45,28 @@ export class ConsultaRepositorioMemoria implements ConsultaRepositorio {
     return [...this.consultas.values()].filter(c => c.status === 'em_andamento' && c.criadaEm < limite)
   }
 
-  async listar(usuarioId: string): Promise<ConsultaResumo[]> {
+  async listar(usuarioId: string, filtro: FiltroListagem): Promise<ListaPaginada> {
+    const todos = this.resumos(usuarioId).filter(r => !filtro.busca || r.pacienteNome.toLowerCase().includes(filtro.busca.toLowerCase()))
+    const inicio = (filtro.pagina - 1) * filtro.porPagina
+    return { itens: todos.slice(inicio, inicio + filtro.porPagina), total: todos.length }
+  }
+
+  async metricas(usuarioId: string, janela: JanelaMetricas): Promise<MetricasConsultas> {
+    const minhas = [...this.consultas.values()].filter(c => c.usuarioId === usuarioId)
+    const finalizadas = minhas.filter(c => c.status === 'finalizada')
+    return {
+      consultasHoje: minhas.filter(c => c.criadaEm >= janela.inicioHoje).length,
+      consultasOntem: minhas.filter(c => c.criadaEm >= janela.inicioOntem && c.criadaEm < janela.inicioHoje).length,
+      finalizadas: finalizadas.length,
+      comCredito: finalizadas.filter(c => (this.resultadosPorConsulta.get(c.id) ?? []).some(r => r.status === 'aprovada')).length,
+      volumeSolicitado: minhas.reduce((soma, c) => soma + c.valorTratamento, 0),
+    }
+  }
+
+  private resumos(usuarioId: string): ConsultaResumo[] {
     return [...this.consultas.values()]
       .filter(c => c.usuarioId === usuarioId)
+      .sort((a, b) => b.criadaEm.getTime() - a.criadaEm.getTime())
       .map(c => ({
         id: c.id,
         pacienteNome: this.nomesPacientes.get(c.pacienteId) ?? '',
