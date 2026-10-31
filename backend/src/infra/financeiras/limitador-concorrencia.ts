@@ -19,7 +19,7 @@ export class LimitadorDeConcorrencia {
       this.ativos += 1
       return Promise.resolve(this.criarLiberacao())
     }
-    if (this.esperaPrevistaMs() > prazoRestanteMs) return Promise.resolve(null)
+    if (this.esperaPrevistaMs() + this.opcoes.duracaoEstimadaMs > prazoRestanteMs) return Promise.resolve(null)
     return new Promise(resolve => this.fila.push(resolve))
   }
 
