@@ -13,7 +13,7 @@ const tabela: Record<Cenario, Partial<Record<NomeFinanceira | 'todas', Comportam
   todas_aprovam: { todas: { forcarAprovacao: true }, delta: { forcarAprovacao: true, semErro: true, latenciaMs: 6000 } },
   delta_falha: { delta: { forcarErro: true, latenciaMs: 0 } },
   delta_timeout: { delta: { latenciaMs: 12_000 } },
-  nenhuma_aprova: { todas: { forcarRecusa: true } },
+  nenhuma_aprova: { todas: { forcarRecusa: true }, delta: { forcarRecusa: true, latenciaMs: 5000 } },
 }
 
 export function comportamento(cenario: Cenario, financeira: NomeFinanceira): Comportamento {

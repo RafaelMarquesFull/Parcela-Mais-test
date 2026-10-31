@@ -6,3 +6,10 @@ export function criarRelogioFalso(): Relogio {
     esperar: ms => new Promise(resolve => setTimeout(resolve, ms)),
   }
 }
+
+export function criarRelogioAcelerado(fator: number): Relogio {
+  return {
+    agora: () => Date.now() * fator,
+    esperar: ms => new Promise(resolve => setTimeout(resolve, ms / fator)),
+  }
+}
