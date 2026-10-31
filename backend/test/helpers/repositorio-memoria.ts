@@ -6,6 +6,10 @@ import type { NovoPaciente, Paciente } from '../../src/domain/entities/paciente'
 import type { NovoResultado, ResultadoFinanceira } from '../../src/domain/entities/resultado-financeira'
 import type { ConsultaRepositorio } from '../../src/domain/ports/consulta.repository'
 import type { PacienteRepositorio } from '../../src/domain/ports/paciente.repository'
+import type { NovoRefreshToken, RefreshToken } from '../../src/domain/entities/refresh-token'
+import type { Usuario } from '../../src/domain/entities/usuario'
+import type { RefreshTokenRepositorio } from '../../src/domain/ports/refresh-token.repository'
+import type { UsuarioRepositorio } from '../../src/domain/ports/usuario.repository'
 
 export class ConsultaRepositorioMemoria implements ConsultaRepositorio {
   readonly consultas = new Map<string, Consulta>()
@@ -84,5 +88,42 @@ export class PacienteRepositorioMemoria implements PacienteRepositorio {
 
   async buscarPorId(id: string) {
     return this.pacientes.get(id) ?? null
+  }
+}
+
+export class UsuarioRepositorioMemoria implements UsuarioRepositorio {
+  constructor(private readonly usuarios: Usuario[] = []) {}
+
+  async buscarPorEmail(email: string) {
+    return this.usuarios.find(u => u.email === email) ?? null
+  }
+
+  async buscarPorId(id: string) {
+    return this.usuarios.find(u => u.id === id) ?? null
+  }
+}
+
+export class RefreshTokenRepositorioMemoria implements RefreshTokenRepositorio {
+  readonly tokens = new Map<string, RefreshToken>()
+
+  async criar(dados: NovoRefreshToken): Promise<RefreshToken> {
+    const token: RefreshToken = { ...dados, id: randomUUID() }
+    this.tokens.set(token.id, token)
+    return token
+  }
+
+  async buscarPorHash(hash: string) {
+    return [...this.tokens.values()].find(t => t.hash === hash) ?? null
+  }
+
+  async marcarUsado(id: string, quando: Date) {
+    const token = this.tokens.get(id)
+    if (token) this.tokens.set(id, { ...token, usadoEm: quando })
+  }
+
+  async revogarFamilia(familiaId: string, quando: Date) {
+    for (const [id, token] of this.tokens) {
+      if (token.familiaId === familiaId && !token.revogadoEm) this.tokens.set(id, { ...token, revogadoEm: quando })
+    }
   }
 }
