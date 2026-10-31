@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  nome          String
+  senhaHash     String
+  criadoEm      DateTime       @default(now())
+  consultas     Consulta[]
+  refreshTokens RefreshToken[]
+}
+
+model RefreshToken {
+  id         String    @id @default(cuid())
+  usuarioId  String
+  hash       String    @unique
+  familiaId  String
+  expiraEm   DateTime
+  usadoEm    DateTime?
+  revogadoEm DateTime?
+  criadoEm   DateTime  @default(now())
+  usuario    Usuario   @relation(fields: [usuarioId], references: [id])
+
+  @@index([familiaId])
+}
+
+model Paciente {
+  id             String     @id @default(cuid())
+  nome           String
+  cpf            String
+  dataNascimento String
+  celular        String
+  rendaMensal    Int
+  criadoEm       DateTime   @default(now())
+  consultas      Consulta[]
+}
+
+model Consulta {
+  id                String                @id @default(cuid())
+  usuarioId         String
+  pacienteId        String
+  valorTratamento   Int
+  cenario           String
+  chaveIdempotencia String                @unique
+  status            String
+  criadaEm          DateTime              @default(now())
+  finalizadaEm      DateTime?
+  usuario           Usuario               @relation(fields: [usuarioId], references: [id])
+  paciente          Paciente              @relation(fields: [pacienteId], references: [id])
+  resultados        ResultadoFinanceira[]
+  escolha           Escolha?
+}
+
+model ResultadoFinanceira {
+  id            String    @id @default(cuid())
+  consultaId    String
+  financeira    String
+  status        String
+  motivo        String?
+  valorAprovado Int?
+  taxaMensal    Int?
+  prazos        String
+  duracaoMs     Int?
+  respondidoEm  DateTime?
+  consulta      Consulta  @relation(fields: [consultaId], references: [id])
+  escolhas      Escolha[]
+
+  @@unique([consultaId, financeira])
+}
+
+model Escolha {
+  id           String              @id @default(cuid())
+  consultaId   String              @unique
+  resultadoId  String
+  prazoMeses   Int
+  valorParcela Int
+  totalPago    Int
+  criadaEm     DateTime            @default(now())
+  consulta     Consulta            @relation(fields: [consultaId], references: [id])
+  resultado    ResultadoFinanceira @relation(fields: [resultadoId], references: [id])
+}

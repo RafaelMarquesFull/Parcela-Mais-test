@@ -19,13 +19,20 @@
     "@prisma/client": "^6.0.0",
     "fastify": "^5.0.0",
     "shared": "*",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "prisma": "^6.0.0",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0",
-    "vitest": "^3.0.0"
+    "vitest": "^3.0.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.7"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }
