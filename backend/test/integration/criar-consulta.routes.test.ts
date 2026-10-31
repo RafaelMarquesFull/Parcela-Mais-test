@@ -8,7 +8,7 @@ beforeAll(async () => {
 afterAll(() => ctx.limpar())
 
 const post = (payload: Record<string, unknown> = pacienteExemplo, chave: string = crypto.randomUUID()) =>
-  ctx.app.inject({ method: 'POST', url: '/consultas', headers: { 'idempotency-key': chave }, payload })
+  ctx.app.inject({ method: 'POST', url: '/consultas', headers: { ...ctx.auth, 'idempotency-key': chave }, payload })
 
 describe('POST /consultas', () => {
   it('devolve 202 com id e grava a consulta', async () => {
@@ -35,7 +35,7 @@ describe('POST /consultas', () => {
   })
 
   it('sem Idempotency-Key devolve 400', async () => {
-    const res = await ctx.app.inject({ method: 'POST', url: '/consultas', payload: pacienteExemplo })
+    const res = await ctx.app.inject({ method: 'POST', url: '/consultas', headers: ctx.auth, payload: pacienteExemplo })
     expect(res.statusCode).toBe(400)
   })
 
@@ -58,13 +58,13 @@ describe('POST /consultas', () => {
   })
 
   it('body vazio devolve 400', async () => {
-    const res = await ctx.app.inject({ method: 'POST', url: '/consultas', headers: { 'idempotency-key': crypto.randomUUID() } })
+    const res = await ctx.app.inject({ method: 'POST', url: '/consultas', headers: { ...ctx.auth, 'idempotency-key': crypto.randomUUID() } })
     expect(res.statusCode).toBe(400)
   })
 
   it('cenario é ignorado quando simulação está desabilitada', async () => {
     const outro = await construirApp({ simulacao: false })
-    const res = await outro.app.inject({ method: 'POST', url: '/consultas', headers: { 'idempotency-key': crypto.randomUUID() }, payload: { ...pacienteExemplo, cenario: 'delta_falha' } })
+    const res = await outro.app.inject({ method: 'POST', url: '/consultas', headers: { ...outro.auth, 'idempotency-key': crypto.randomUUID() }, payload: { ...pacienteExemplo, cenario: 'delta_falha' } })
     const consulta = await outro.prisma.consulta.findUnique({ where: { id: res.json().id } })
     expect(consulta?.cenario).toBe('aleatorio')
     await outro.limpar()

@@ -13,9 +13,9 @@ beforeAll(async () => {
 afterAll(() => ctx.limpar())
 
 async function rodar(cenario: Cenario) {
-  const criada = await ctx.app.inject({ method: 'POST', url: '/consultas', headers: { 'idempotency-key': crypto.randomUUID() }, payload: { ...pacienteExemplo, cenario } })
+  const criada = await ctx.app.inject({ method: 'POST', url: '/consultas', headers: { ...ctx.auth, 'idempotency-key': crypto.randomUUID() }, payload: { ...pacienteExemplo, cenario } })
   await esperar((10_000 / FATOR) + 150)
-  const snapshot = (await ctx.app.inject({ method: 'GET', url: `/consultas/${criada.json().id}` })).json()
+  const snapshot = (await ctx.app.inject({ method: 'GET', url: `/consultas/${criada.json().id}`, headers: ctx.auth })).json()
   const por = Object.fromEntries((snapshot.resultados as ResultadoSnapshot[]).map(r => [r.financeira, r]))
   return { snapshot, por }
 }

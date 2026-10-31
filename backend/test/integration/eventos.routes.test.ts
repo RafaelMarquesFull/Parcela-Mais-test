@@ -13,7 +13,7 @@ beforeAll(async () => {
 afterAll(() => ctx.limpar())
 
 const criar = async () => {
-  const res = await ctx.app.inject({ method: 'POST', url: '/consultas', headers: { 'idempotency-key': crypto.randomUUID() }, payload: pacienteExemplo })
+  const res = await ctx.app.inject({ method: 'POST', url: '/consultas', headers: { ...ctx.auth, 'idempotency-key': crypto.randomUUID() }, payload: pacienteExemplo })
   return res.json().id as string
 }
 
@@ -21,13 +21,13 @@ const eventosDe = (corpo: string) => corpo.split('\n').filter(l => l.startsWith(
 
 describe('GET /consultas/:id/eventos', () => {
   it('inexistente devolve 404', async () => {
-    const res = await ctx.app.inject({ method: 'GET', url: '/consultas/x/eventos' })
+    const res = await ctx.app.inject({ method: 'GET', url: '/consultas/x/eventos', headers: ctx.auth })
     expect(res.statusCode).toBe(404)
   })
 
   it('consulta em andamento recebe um resultado por financeira e termina com consulta-finalizada', async () => {
     const id = await criar()
-    const res = await ctx.app.inject({ method: 'GET', url: `/consultas/${id}/eventos` })
+    const res = await ctx.app.inject({ method: 'GET', url: `/consultas/${id}/eventos`, headers: ctx.auth })
     expect(res.statusCode).toBe(200)
     expect(res.headers['content-type']).toContain('text/event-stream')
     const eventos = eventosDe(res.body)
@@ -40,7 +40,7 @@ describe('GET /consultas/:id/eventos', () => {
   it('consulta finalizada devolve consulta-finalizada na hora e fecha', async () => {
     const id = await criar()
     await esperar(250)
-    const res = await ctx.app.inject({ method: 'GET', url: `/consultas/${id}/eventos` })
+    const res = await ctx.app.inject({ method: 'GET', url: `/consultas/${id}/eventos`, headers: ctx.auth })
     const eventos = eventosDe(res.body)
     expect(eventos.filter(e => e === 'resultado')).toHaveLength(4)
     expect(eventos.at(-1)).toBe('consulta-finalizada')

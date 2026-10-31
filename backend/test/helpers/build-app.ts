@@ -5,6 +5,7 @@ import type { Financeira } from '../../src/domain/ports/financeira.port'
 import type { Relogio } from '../../src/domain/ports/relogio.port'
 import { criarBancoTemporario } from './banco-temporario'
 import { criarQuatroFakes } from './fake-financeira'
+import { autenticarParaTeste } from './login'
 
 export async function construirApp(opcoes: { simulacao?: boolean; financeiras?: Financeira[]; relogio?: Relogio } = {}) {
   const banco = await criarBancoTemporario()
@@ -24,8 +25,11 @@ export async function construirApp(opcoes: { simulacao?: boolean; financeiras?: 
   })
   const app = criarApp({ env, container })
   await app.ready()
+  const { bearer, cookie } = await autenticarParaTeste(app)
   return {
     app,
+    auth: { authorization: bearer },
+    cookie,
     fakes,
     prisma: banco.prisma,
     container,

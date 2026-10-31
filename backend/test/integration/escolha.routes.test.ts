@@ -10,13 +10,13 @@ beforeAll(async () => {
   ctx.fakes.beta.respondeEm(20, { aprovada: true, valorAprovado: 480_000, taxaMensal: 199, prazos: [12, 18, 24] })
   ctx.fakes.gama.respondeEm(20, recusada)
   ctx.fakes.delta.respondeEm(20, recusada)
-  const criada = await ctx.app.inject({ method: 'POST', url: '/consultas', headers: { 'idempotency-key': crypto.randomUUID() }, payload: pacienteExemplo })
+  const criada = await ctx.app.inject({ method: 'POST', url: '/consultas', headers: { ...ctx.auth, 'idempotency-key': crypto.randomUUID() }, payload: pacienteExemplo })
   id = criada.json().id
   await esperar(200)
 })
 afterAll(() => ctx.limpar())
 
-const escolher = (payload: Record<string, unknown>) => ctx.app.inject({ method: 'PUT', url: `/consultas/${id}/escolha`, payload })
+const escolher = (payload: Record<string, unknown>) => ctx.app.inject({ method: 'PUT', url: `/consultas/${id}/escolha`, headers: ctx.auth, payload })
 
 describe('PUT /consultas/:id/escolha', () => {
   it('prazo inexistente devolve 422', async () => {
@@ -36,7 +36,7 @@ describe('PUT /consultas/:id/escolha', () => {
     expect(res.statusCode).toBe(200)
     expect(res.json()).toMatchObject({ financeira: 'beta', prazoMeses: 24 })
     expect(res.json().valorParcela).toBeGreaterThan(0)
-    const snapshot = await ctx.app.inject({ method: 'GET', url: `/consultas/${id}` })
+    const snapshot = await ctx.app.inject({ method: 'GET', url: `/consultas/${id}`, headers: ctx.auth })
     expect(snapshot.json().escolha).toMatchObject({ financeira: 'beta', prazoMeses: 24 })
   })
 
@@ -49,7 +49,7 @@ describe('PUT /consultas/:id/escolha', () => {
   })
 
   it('consulta inexistente devolve 404', async () => {
-    const res = await ctx.app.inject({ method: 'PUT', url: '/consultas/x/escolha', payload: { financeira: 'beta', prazoMeses: 12 } })
+    const res = await ctx.app.inject({ method: 'PUT', url: '/consultas/x/escolha', headers: ctx.auth, payload: { financeira: 'beta', prazoMeses: 12 } })
     expect(res.statusCode).toBe(404)
   })
 })

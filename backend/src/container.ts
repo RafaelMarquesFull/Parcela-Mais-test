@@ -5,6 +5,11 @@ import { EscolherOferta } from './application/consultas/escolher-oferta'
 import { ListarConsultas } from './application/consultas/listar-consultas'
 import { ObterConsulta } from './application/consultas/obter-consulta'
 import { OrquestradorDeConsulta } from './application/consultas/orquestrar-consulta'
+import { Autenticar } from './application/auth/autenticar'
+import { EncerrarSessao } from './application/auth/encerrar-sessao'
+import { RenovarSessao } from './application/auth/renovar-sessao'
+import { BcryptHasher } from './infra/auth/bcrypt-hasher'
+import { JwtEmissor } from './infra/auth/jwt-emissor'
 import type { Env } from './config/env'
 import type { Financeira } from './domain/ports/financeira.port'
 import type { Relogio } from './domain/ports/relogio.port'
@@ -46,6 +51,10 @@ export function criarContainer(opcoes: Opcoes) {
     ]),
   ) as Record<NomeFinanceira, LimitadorDeConcorrencia>
 
+  const hasher = new BcryptHasher()
+  const emissor = new JwtEmissor(env.JWT_SECRET)
+  const sessao = { usuarios, refreshTokens, hasher, emissor, relogio }
+
   const orquestrador = new OrquestradorDeConsulta({ financeiras, limitadores, consultas, eventos, relogio, prazoMs: PRAZO_CONSULTA_MS })
 
   return {
@@ -63,6 +72,10 @@ export function criarContainer(opcoes: Opcoes) {
     obterConsulta: new ObterConsulta(consultas, pacientes),
     listarConsultas: new ListarConsultas(consultas),
     escolherOferta: new EscolherOferta(consultas),
+    emissor,
+    autenticar: new Autenticar(sessao),
+    renovarSessao: new RenovarSessao(sessao),
+    encerrarSessao: new EncerrarSessao(sessao),
   }
 }
 

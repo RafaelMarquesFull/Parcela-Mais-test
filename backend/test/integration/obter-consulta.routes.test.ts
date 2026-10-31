@@ -10,7 +10,7 @@ afterAll(() => ctx.limpar())
 
 describe('GET /consultas/:id', () => {
   it('inexistente devolve 404', async () => {
-    const res = await ctx.app.inject({ method: 'GET', url: '/consultas/nao-existe' })
+    const res = await ctx.app.inject({ method: 'GET', url: '/consultas/nao-existe', headers: ctx.auth })
     expect(res.statusCode).toBe(404)
   })
 
@@ -19,9 +19,9 @@ describe('GET /consultas/:id', () => {
     ctx.fakes.beta.respondeEm(50, { aprovada: true, valorAprovado: 480_000, taxaMensal: 199, prazos: [12, 18, 24] })
     ctx.fakes.gama.respondeEm(50, recusada)
     ctx.fakes.delta.falha()
-    const criada = await ctx.app.inject({ method: 'POST', url: '/consultas', headers: { 'idempotency-key': crypto.randomUUID() }, payload: pacienteExemplo })
+    const criada = await ctx.app.inject({ method: 'POST', url: '/consultas', headers: { ...ctx.auth, 'idempotency-key': crypto.randomUUID() }, payload: pacienteExemplo })
     await esperar(300)
-    const res = await ctx.app.inject({ method: 'GET', url: `/consultas/${criada.json().id}` })
+    const res = await ctx.app.inject({ method: 'GET', url: `/consultas/${criada.json().id}`, headers: ctx.auth })
     expect(res.statusCode).toBe(200)
     const corpo = res.json()
     expect(corpo.status).toBe('finalizada')
@@ -35,7 +35,7 @@ describe('GET /consultas/:id', () => {
   })
 
   it('GET /consultas lista resumos', async () => {
-    const res = await ctx.app.inject({ method: 'GET', url: '/consultas' })
+    const res = await ctx.app.inject({ method: 'GET', url: '/consultas', headers: ctx.auth })
     expect(res.statusCode).toBe(200)
     expect(res.json()[0]).toMatchObject({ pacienteNome: 'Ana Souza', valorTratamento: 800_000 })
   })
