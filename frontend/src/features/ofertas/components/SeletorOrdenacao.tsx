@@ -11,7 +11,7 @@ export function SeletorOrdenacao({ valor, aoAlterar }: { valor: Ordenacao; aoAlt
         id="ordenacao"
         value={valor}
         onChange={e => aoAlterar(e.target.value as Ordenacao)}
-        className="h-8 rounded-lg border border-input bg-background px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="campo-escuro h-9 rounded-lg border border-border px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <option value="menor_parcela">Menor parcela</option>
         <option value="menor_total">Menor custo total</option>

@@ -14,7 +14,7 @@ export function AcaoNovaConsulta() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Button size="lg" render={<Link to="/consultas/nova" />}>
+        <Button size="lg" className="botao-brilho" render={<Link to="/consultas/nova" />}>
           <PlusCircle /> Nova consulta
         </Button>
       </CardContent>

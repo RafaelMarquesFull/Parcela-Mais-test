@@ -21,11 +21,11 @@ export function NavegacaoPassos({ passo, podeAvancar, enviando, aoVoltar, aoAvan
         <span />
       )}
       {passo === 1 ? (
-        <Button type="button" onClick={aoAvancar} disabled={!podeAvancar}>
+        <Button type="button" size="lg" className="botao-brilho" onClick={aoAvancar} disabled={!podeAvancar}>
           Avançar <ArrowRight />
         </Button>
       ) : (
-        <Button type="submit" disabled={!podeAvancar || enviando}>
+        <Button type="submit" size="lg" className="botao-brilho" disabled={!podeAvancar || enviando}>
           {enviando ? <Loader2 className="animate-spin" /> : <Search />}
           Consultar financeiras
         </Button>

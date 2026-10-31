@@ -1,3 +1,4 @@
+import { CalendarDays, IdCard, Phone, User } from 'lucide-react'
 import { formatarCelular, formatarCpf, somenteDigitos } from 'shared'
 import type { Campo, Valores } from '../state/reducer'
 import type { Erros } from '../state/validacao'
@@ -16,6 +17,7 @@ export function PassoDadosPessoais({ valores, erros, aoAlterar, aoTocar }: Props
       <CampoTexto
         id="nome"
         rotulo="Nome completo"
+        icone={<User />}
         valor={valores.nome}
         erro={erros.nome}
         autoComplete="name"
@@ -26,6 +28,7 @@ export function PassoDadosPessoais({ valores, erros, aoAlterar, aoTocar }: Props
       <CampoTexto
         id="cpf"
         rotulo="CPF"
+        icone={<IdCard />}
         valor={formatarCpf(valores.cpf)}
         erro={erros.cpf}
         inputMode="numeric"
@@ -36,6 +39,7 @@ export function PassoDadosPessoais({ valores, erros, aoAlterar, aoTocar }: Props
       <CampoTexto
         id="dataNascimento"
         rotulo="Data de nascimento"
+        icone={<CalendarDays />}
         valor={valores.dataNascimento}
         erro={erros.dataNascimento}
         type="date"
@@ -46,6 +50,7 @@ export function PassoDadosPessoais({ valores, erros, aoAlterar, aoTocar }: Props
       <CampoTexto
         id="celular"
         rotulo="Celular"
+        icone={<Phone />}
         valor={formatarCelular(valores.celular)}
         erro={erros.celular}
         inputMode="tel"

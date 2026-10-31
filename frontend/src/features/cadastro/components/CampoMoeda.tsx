@@ -1,3 +1,4 @@
+import { Banknote } from 'lucide-react'
 import { useState } from 'react'
 import { formatarMoeda, moedaParaCentavos } from 'shared'
 import { CampoTexto } from './CampoTexto'
@@ -21,6 +22,7 @@ export function CampoMoeda({ id, rotulo, centavos, erro, dica, aoAlterar, aoSair
       valor={texto}
       erro={erro}
       dica={dica}
+      icone={<Banknote />}
       inputMode="decimal"
       placeholder="R$ 0,00"
       aoAlterar={v => {

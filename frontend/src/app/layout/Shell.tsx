@@ -6,7 +6,7 @@ type Props = { usuario?: { nome: string } | null; aoSair?: () => void }
 
 export function Shell({ usuario, aoSair }: Props) {
   return (
-    <div className="flex min-h-dvh flex-col bg-background text-foreground">
+    <div className="flex min-h-dvh flex-col text-foreground">
       <Header usuario={usuario} aoSair={aoSair} />
       <div className="flex flex-1 flex-col md:flex-row">
         <Sidebar />

@@ -132,8 +132,28 @@
 @layer base {
   body {
     font-variant-numeric: tabular-nums;
+    background-color: var(--background);
+    background-image: radial-gradient(70% 55% at 50% 100%, var(--brilho), transparent 70%);
+    background-attachment: fixed;
   }
 }
+
+@utility rotulo {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+@utility campo-escuro {
+  background-color: var(--input);
+}
+
+@utility botao-brilho {
+  box-shadow: 0 0 28px -6px var(--primary);
+}
+
 
 @media (prefers-reduced-motion: no-preference) {
   html {

@@ -12,12 +12,14 @@ const opcoes: Array<{ valor: Cenario; rotulo: string }> = [
 export function SeletorCenario({ valor, aoAlterar }: { valor: Cenario; aoAlterar(valor: Cenario): void }) {
   return (
     <div className="grid gap-1.5 rounded-lg border border-dashed border-border p-3">
-      <Label htmlFor="cenario">Cenário de simulação</Label>
+      <Label htmlFor="cenario" className="rotulo">
+        Cenário de simulação
+      </Label>
       <select
         id="cenario"
         value={valor}
         onChange={e => aoAlterar(e.target.value as Cenario)}
-        className="h-9 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="campo-escuro h-11 rounded-xl border border-border px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         {opcoes.map(o => (
           <option key={o.valor} value={o.valor}>
