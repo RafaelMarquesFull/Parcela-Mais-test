@@ -1,0 +1,5 @@
+export * from './dados-pessoais.schema'
+export * from './valores.schema'
+export * from './cadastro.schema'
+export * from './escolha.schema'
+export * from './login.schema'
