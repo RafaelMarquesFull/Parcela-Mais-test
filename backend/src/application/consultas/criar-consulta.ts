@@ -37,6 +37,7 @@ export class CriarConsulta {
       throw erro
     }
 
+    await this.deps.orquestrador.prepararResultados(consulta.id)
     this.deps.orquestrador.executar(consulta, paciente).catch(this.deps.registrarErro)
     return { id: consulta.id }
   }

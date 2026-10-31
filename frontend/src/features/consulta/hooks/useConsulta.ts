@@ -29,7 +29,12 @@ export function useConsulta(id: string): {
   }, [recarregar])
 
   const aplicarResultado = useCallback((resultado: ResultadoSnapshot) => {
-    setConsulta(atual => atual && { ...atual, resultados: atual.resultados.map(r => (r.financeira === resultado.financeira ? resultado : r)) })
+    setConsulta(atual => {
+      if (!atual) return atual
+      const existe = atual.resultados.some(r => r.financeira === resultado.financeira)
+      const resultados = existe ? atual.resultados.map(r => (r.financeira === resultado.financeira ? resultado : r)) : [...atual.resultados, resultado]
+      return { ...atual, resultados }
+    })
   }, [])
 
   const { modo } = useEventosConsulta({

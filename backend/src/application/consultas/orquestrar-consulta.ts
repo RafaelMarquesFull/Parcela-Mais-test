@@ -26,15 +26,19 @@ const indisponivel = (motivo: NovoResultado['motivo']): Desfecho => ({ ...consul
 export class OrquestradorDeConsulta {
   constructor(private readonly deps: Dependencias) {}
 
+  async prepararResultados(consultaId: string): Promise<void> {
+    for (const financeira of this.deps.financeiras) {
+      await this.deps.consultas.gravarResultado({ consultaId, financeira: financeira.nome, ...consultando, duracaoMs: null, respondidoEm: null })
+    }
+  }
+
   async executar(consulta: Consulta, paciente: Paciente): Promise<void> {
     const { financeiras, consultas, eventos, relogio, prazoMs } = this.deps
     const dados: DadosPaciente = { ...paciente, valorTratamento: consulta.valorTratamento }
     const inicio = relogio.agora()
     let encerrada = false
 
-    for (const financeira of financeiras) {
-      await consultas.gravarResultado({ consultaId: consulta.id, financeira: financeira.nome, ...consultando, duracaoMs: null, respondidoEm: null })
-    }
+    if ((await consultas.resultados(consulta.id)).length === 0) await this.prepararResultados(consulta.id)
 
     const registrar = async (financeira: NomeFinanceira, desfecho: Desfecho, inicioChamada: number) => {
       if (encerrada) return

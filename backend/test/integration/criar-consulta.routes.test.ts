@@ -18,6 +18,13 @@ describe('POST /consultas', () => {
     expect(await ctx.prisma.consulta.findUnique({ where: { id } })).not.toBeNull()
   })
 
+  it('snapshot logo após o 202 já tem as 4 financeiras como consultando', async () => {
+    const res = await post()
+    const snapshot = await ctx.app.inject({ method: 'GET', url: `/consultas/${res.json().id}`, headers: ctx.auth })
+    expect(snapshot.json().resultados).toHaveLength(4)
+    expect(snapshot.json().resultados.every((r: { status: string }) => r.status === 'consultando')).toBe(true)
+  })
+
   it('mesma Idempotency-Key devolve o mesmo id e cria uma consulta só', async () => {
     const chave = crypto.randomUUID()
     const a = await post(pacienteExemplo, chave)
