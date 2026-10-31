@@ -52,19 +52,30 @@ describe('Autenticar', () => {
 })
 
 describe('RenovarSessao', () => {
-  it('rotaciona: devolve novo refresh e o antigo passa a ser inválido', async () => {
+  it('rotaciona: devolve novo refresh e o antigo passa a ser inválido depois da janela de tolerância', async () => {
     const { refreshToken } = await autenticar.executar({ email: 'clinica@parcelamais.com', senha: 'parcela123' })
     const renovado = await renovar.executar(refreshToken)
     expect(renovado.refreshToken).not.toBe(refreshToken)
     expect(renovado.accessToken).toBe('access:u1')
+    agora += 61_000
     await expect(renovar.executar(refreshToken)).rejects.toBeInstanceOf(RefreshInvalido)
   })
 
-  it('reuso de refresh já rotacionado revoga a família inteira, inclusive o novo', async () => {
+  it('reuso de refresh rotacionado há mais de 60 s revoga a família inteira, inclusive o novo', async () => {
     const { refreshToken: t0 } = await autenticar.executar({ email: 'clinica@parcelamais.com', senha: 'parcela123' })
     const r1 = await renovar.executar(t0)
+    agora += 61_000
     await expect(renovar.executar(t0)).rejects.toBeInstanceOf(RefreshInvalido)
     await expect(renovar.executar(r1.refreshToken)).rejects.toBeInstanceOf(RefreshInvalido)
+  })
+
+  it('reuso de refresh rotacionado há menos de 60 s é tolerado e emite nova sessão sem revogar', async () => {
+    const { refreshToken: t0 } = await autenticar.executar({ email: 'clinica@parcelamais.com', senha: 'parcela123' })
+    const r1 = await renovar.executar(t0)
+    agora += 30_000
+    const r2 = await renovar.executar(t0)
+    expect(r2.refreshToken).not.toBe(t0)
+    await expect(renovar.executar(r1.refreshToken)).resolves.toBeDefined()
   })
 
   it('refresh expirado é inválido', async () => {

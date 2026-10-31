@@ -1,7 +1,8 @@
 import { lazy, Suspense, type ReactNode } from 'react'
 import { createBrowserRouter } from 'react-router'
-import { Shell } from './layout/Shell'
+import { RotaProtegida } from './RotaProtegida'
 
+const LoginPage = lazy(() => import('@/features/auth/LoginPage').then(m => ({ default: m.LoginPage })))
 const InicioPage = lazy(() => import('@/features/inicio/InicioPage').then(m => ({ default: m.InicioPage })))
 const CadastroPage = lazy(() => import('@/features/cadastro/CadastroPage').then(m => ({ default: m.CadastroPage })))
 const ConsultaPage = lazy(() => import('@/features/consulta/ConsultaPage').then(m => ({ default: m.ConsultaPage })))
@@ -11,8 +12,9 @@ function Pagina({ children }: { children: ReactNode }) {
 }
 
 export const router = createBrowserRouter([
+  { path: '/login', element: <Pagina><LoginPage /></Pagina> },
   {
-    element: <Shell />,
+    element: <RotaProtegida />,
     children: [
       { path: '/', element: <Pagina><InicioPage /></Pagina> },
       { path: '/consultas', element: <Pagina><InicioPage apenasLista /></Pagina> },

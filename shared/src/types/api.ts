@@ -49,5 +49,6 @@ export type EventoFinalizada = { tipo: 'consulta-finalizada'; status: StatusCons
 export type EventoConsulta = EventoResultado | EventoFinalizada
 
 export type ConfigResposta = { simulacaoHabilitada: boolean }
-export type LoginResposta = { accessToken: string; usuario: { nome: string } }
+export type UsuarioResposta = { nome: string }
+export type LoginResposta = { accessToken: string; usuario: UsuarioResposta }
 export type ErroResposta = { mensagem: string; erros?: { campo: string; mensagem: string }[] }

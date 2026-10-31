@@ -47,15 +47,16 @@ describe('autenticação', () => {
     expect(consulta?.usuarioId).toBe(usuarioSemeado.id)
   })
 
-  it('refresh rotaciona e o cookie antigo passa a dar 401', async () => {
+  it('refresh rotaciona e o cookie antigo ainda vale dentro da janela de tolerância', async () => {
     const cookie = cookieDe(await login())
     const renovado = await ctx.app.inject({ method: 'POST', url: '/auth/refresh', headers: { cookie } })
     expect(renovado.statusCode).toBe(200)
     expect(renovado.json().accessToken).toBeTypeOf('string')
+    expect(renovado.json().usuario).toEqual({ nome: usuarioSemeado.nome })
     const novoCookie = cookieDe(renovado)
     expect(novoCookie).not.toBe(cookie)
-    expect((await ctx.app.inject({ method: 'POST', url: '/auth/refresh', headers: { cookie } })).statusCode).toBe(401)
-    expect((await ctx.app.inject({ method: 'POST', url: '/auth/refresh', headers: { cookie: novoCookie } })).statusCode).toBe(401)
+    expect((await ctx.app.inject({ method: 'POST', url: '/auth/refresh', headers: { cookie } })).statusCode).toBe(200)
+    expect((await ctx.app.inject({ method: 'POST', url: '/auth/refresh', headers: { cookie: novoCookie } })).statusCode).toBe(200)
   })
 
   it('refresh sem cookie devolve 401', async () => {

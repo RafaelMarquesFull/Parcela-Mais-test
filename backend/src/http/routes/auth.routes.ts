@@ -22,9 +22,9 @@ export async function authRoutes(app: FastifyInstance, opcoes: { container: Cont
   app.post('/auth/refresh', async (request, reply) => {
     const atual = request.cookies[NOME_COOKIE]
     if (!atual) return reply.code(401).send({ mensagem: 'Sessão necessária' })
-    const { accessToken, refreshToken } = await container.renovarSessao.executar(atual)
+    const { accessToken, refreshToken, usuario } = await container.renovarSessao.executar(atual)
     gravarCookie(reply, refreshToken)
-    return { accessToken }
+    return { accessToken, usuario }
   })
 
   app.post('/auth/logout', async (request, reply) => {
