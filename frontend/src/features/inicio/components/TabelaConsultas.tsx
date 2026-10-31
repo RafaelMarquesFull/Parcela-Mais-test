@@ -30,7 +30,7 @@ export function TabelaConsultas({ titulo, descricao, porPagina }: Props) {
   const fim = Math.min(pagina.pagina * pagina.porPagina, pagina.total)
 
   return (
-    <section className="rounded-2xl border border-border bg-card" aria-busy={carregando}>
+    <section className="min-w-0 overflow-hidden rounded-2xl border border-border bg-card" aria-busy={carregando}>
       <header className="flex flex-wrap items-end justify-between gap-4 p-5 sm:p-6">
         <div>
           <h2 className="text-xl font-semibold tracking-tight">{titulo}</h2>
