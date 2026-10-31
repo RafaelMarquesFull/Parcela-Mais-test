@@ -1,8 +1,12 @@
 import { criarApp } from './app'
 import { carregarEnv } from './config/env'
+import { criarContainer } from './container'
+import { criarPrismaClient } from './infra/database/prisma-client'
 
 const env = carregarEnv()
-const app = criarApp({ env })
+const prisma = criarPrismaClient(env.DATABASE_URL)
+const container = criarContainer({ env, prisma })
+const app = criarApp({ env, container })
 
 app.listen({ port: env.PORT, host: '0.0.0.0' }).catch(erro => {
   app.log.error(erro)
