@@ -80,6 +80,21 @@ describe('useFormulario', () => {
     expect(lerRascunho()).toBeNull()
   })
 
+  it('editar um campo depois de uma falha gera nova chave de idempotência', async () => {
+    const chaves = ['11111111-1111-4111-8111-111111111111', '22222222-2222-4222-8222-222222222222']
+    vi.stubGlobal('crypto', { ...globalThis.crypto, randomUUID: vi.fn(() => chaves.shift()) })
+    const aoEnviar = vi.fn().mockRejectedValueOnce(new Error('rede')).mockResolvedValueOnce(undefined)
+    const { result } = renderHook(() => useFormulario({ aoEnviar }))
+    preencher(result, dadosValidos)
+    act(() => result.current.avancar())
+    preencher(result, { rendaMensal: 1_000_000, valorTratamento: 800_000 })
+    await act(() => result.current.enviar())
+    preencher(result, { valorTratamento: 700_000 })
+    await act(() => result.current.enviar())
+    expect(aoEnviar.mock.calls[0]![1]).toBe('11111111-1111-4111-8111-111111111111')
+    expect(aoEnviar.mock.calls[1]![1]).toBe('22222222-2222-4222-8222-222222222222')
+  })
+
   it('não envia com passo 2 inválido', async () => {
     const aoEnviar = vi.fn()
     const { result } = renderHook(() => useFormulario({ aoEnviar }))

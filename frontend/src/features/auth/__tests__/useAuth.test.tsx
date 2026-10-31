@@ -87,6 +87,20 @@ describe('requisitar com renovação', () => {
     expect(refreshes).toBe(1)
   })
 
+  it('erro de rede no refresh não encerra a sessão nem limpa o token', async () => {
+    definirToken('velho')
+    const ouvinte = vi.fn()
+    window.addEventListener('sessao-encerrada', ouvinte)
+    fetchMock.mockImplementation(async (url: string) => {
+      if (url.endsWith('/auth/refresh')) throw new TypeError('Failed to fetch')
+      return respostaDe({ status: 401 })
+    })
+    await expect(requisitar('/consultas')).rejects.toBeInstanceOf(TypeError)
+    expect(obterToken()).toBe('velho')
+    expect(ouvinte).not.toHaveBeenCalled()
+    window.removeEventListener('sessao-encerrada', ouvinte)
+  })
+
   it('se o refresh falha, limpa o token e dispara sessao-encerrada', async () => {
     definirToken('velho')
     const ouvinte = vi.fn()

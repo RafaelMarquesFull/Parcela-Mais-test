@@ -18,35 +18,35 @@ beforeEach(async () => {
 
 describe('EscolherOferta', () => {
   it('grava a escolha com parcela recalculada no servidor', async () => {
-    const escolha = await escolher.executar(consultaId, { financeira: 'beta', prazoMeses: 24 })
+    const escolha = await escolher.executar(consultaId, 'u1', { financeira: 'beta', prazoMeses: 24 })
     const parcela = calcularParcela(480_000, 199, 24)
     expect(escolha).toMatchObject({ prazoMeses: 24, valorParcela: parcela, totalPago: parcela * 24 })
   })
 
   it('rejeita prazo que a financeira não oferece', async () => {
-    await expect(escolher.executar(consultaId, { financeira: 'beta', prazoMeses: 48 })).rejects.toBeInstanceOf(OfertaInvalida)
+    await expect(escolher.executar(consultaId, 'u1', { financeira: 'beta', prazoMeses: 48 })).rejects.toBeInstanceOf(OfertaInvalida)
   })
 
   it('rejeita financeira que recusou', async () => {
-    await expect(escolher.executar(consultaId, { financeira: 'gama', prazoMeses: 6 })).rejects.toBeInstanceOf(OfertaInvalida)
+    await expect(escolher.executar(consultaId, 'u1', { financeira: 'gama', prazoMeses: 6 })).rejects.toBeInstanceOf(OfertaInvalida)
   })
 
   it('rejeita financeira sem resultado', async () => {
-    await expect(escolher.executar(consultaId, { financeira: 'alfa', prazoMeses: 6 })).rejects.toBeInstanceOf(OfertaInvalida)
+    await expect(escolher.executar(consultaId, 'u1', { financeira: 'alfa', prazoMeses: 6 })).rejects.toBeInstanceOf(OfertaInvalida)
   })
 
   it('repetir a mesma escolha devolve a existente', async () => {
-    const primeira = await escolher.executar(consultaId, { financeira: 'beta', prazoMeses: 12 })
-    const segunda = await escolher.executar(consultaId, { financeira: 'beta', prazoMeses: 12 })
+    const primeira = await escolher.executar(consultaId, 'u1', { financeira: 'beta', prazoMeses: 12 })
+    const segunda = await escolher.executar(consultaId, 'u1', { financeira: 'beta', prazoMeses: 12 })
     expect(segunda.id).toBe(primeira.id)
   })
 
   it('escolha diferente da existente conflita', async () => {
-    await escolher.executar(consultaId, { financeira: 'beta', prazoMeses: 12 })
-    await expect(escolher.executar(consultaId, { financeira: 'beta', prazoMeses: 18 })).rejects.toBeInstanceOf(EscolhaConflitante)
+    await escolher.executar(consultaId, 'u1', { financeira: 'beta', prazoMeses: 12 })
+    await expect(escolher.executar(consultaId, 'u1', { financeira: 'beta', prazoMeses: 18 })).rejects.toBeInstanceOf(EscolhaConflitante)
   })
 
   it('consulta inexistente', async () => {
-    await expect(escolher.executar('x', { financeira: 'beta', prazoMeses: 12 })).rejects.toBeInstanceOf(ConsultaNaoEncontrada)
+    await expect(escolher.executar('x', 'u1', { financeira: 'beta', prazoMeses: 12 })).rejects.toBeInstanceOf(ConsultaNaoEncontrada)
   })
 })

@@ -14,9 +14,9 @@ export class ObterConsulta {
     private readonly pacientes: PacienteRepositorio,
   ) {}
 
-  async executar(id: string): Promise<ConsultaCompleta> {
+  async executar(id: string, usuarioId: string): Promise<ConsultaCompleta> {
     const consulta = await this.consultas.buscarPorId(id)
-    if (!consulta) throw new ConsultaNaoEncontrada()
+    if (!consulta || consulta.usuarioId !== usuarioId) throw new ConsultaNaoEncontrada()
     const paciente = await this.pacientes.buscarPorId(consulta.pacienteId)
     if (!paciente) throw new ConsultaNaoEncontrada()
     const [resultados, escolha] = await Promise.all([this.consultas.resultados(id), this.consultas.escolha(id)])

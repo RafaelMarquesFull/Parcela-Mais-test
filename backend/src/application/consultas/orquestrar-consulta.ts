@@ -43,14 +43,14 @@ export class OrquestradorDeConsulta {
     const registrar = async (financeira: NomeFinanceira, desfecho: Desfecho, inicioChamada: number) => {
       if (encerrada) return
       const agora = relogio.agora()
-      const gravado = await consultas.gravarResultado({
+      const gravado = await consultas.concluirResultado({
         consultaId: consulta.id,
         financeira,
         ...desfecho,
         duracaoMs: agora - inicioChamada,
         respondidoEm: new Date(agora),
       })
-      eventos.publicar(consulta.id, { tipo: 'resultado', resultado: apresentarResultado(gravado) })
+      if (gravado) eventos.publicar(consulta.id, { tipo: 'resultado', resultado: apresentarResultado(gravado) })
     }
 
     const consultar = async (financeira: Financeira) => {
@@ -58,6 +58,7 @@ export class OrquestradorDeConsulta {
       const restante = prazoMs - (inicioChamada - inicio)
       const liberar = await this.deps.limitadores[financeira.nome].adquirir(restante)
       if (liberar === null) return registrar(financeira.nome, indisponivel('fila_cheia'), inicioChamada)
+      if (encerrada) return liberar()
       try {
         const resposta = await financeira.consultar(dados, consulta.cenario)
         await registrar(financeira.nome, desfechoDe(resposta), inicioChamada)
@@ -71,16 +72,20 @@ export class OrquestradorDeConsulta {
     await Promise.race([Promise.all(financeiras.map(consultar)), relogio.esperar(prazoMs)])
     encerrada = true
 
-    const pendentes = (await consultas.resultados(consulta.id)).filter(r => r.status === 'consultando')
-    for (const pendente of pendentes) {
-      const gravado = await consultas.gravarResultado({ ...pendente, ...indisponivel('timeout'), duracaoMs: prazoMs, respondidoEm: new Date(relogio.agora()) })
-      eventos.publicar(consulta.id, { tipo: 'resultado', resultado: apresentarResultado(gravado) })
-    }
-
-    const finalizadaEm = new Date(relogio.agora())
-    await consultas.finalizar(consulta.id, finalizadaEm)
-    eventos.publicar(consulta.id, { tipo: 'consulta-finalizada', status: 'finalizada', finalizadaEm: finalizadaEm.toISOString() })
+    await encerrarPendentes({ consultas, eventos, relogio }, consulta.id, prazoMs)
   }
+}
+
+export async function encerrarPendentes(deps: Pick<Dependencias, 'consultas' | 'eventos' | 'relogio'>, consultaId: string, prazoMs: number): Promise<void> {
+  const { consultas, eventos, relogio } = deps
+  const pendentes = (await consultas.resultados(consultaId)).filter(r => r.status === 'consultando')
+  for (const pendente of pendentes) {
+    const gravado = await consultas.concluirResultado({ ...pendente, ...indisponivel('timeout'), duracaoMs: prazoMs, respondidoEm: new Date(relogio.agora()) })
+    if (gravado) eventos.publicar(consultaId, { tipo: 'resultado', resultado: apresentarResultado(gravado) })
+  }
+  const finalizadaEm = new Date(relogio.agora())
+  await consultas.finalizar(consultaId, finalizadaEm)
+  eventos.publicar(consultaId, { tipo: 'consulta-finalizada', status: 'finalizada', finalizadaEm: finalizadaEm.toISOString() })
 }
 
 function desfechoDe(resposta: RespostaFinanceira): Desfecho {

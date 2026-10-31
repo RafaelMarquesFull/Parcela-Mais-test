@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto'
-import type { ConsultaResumo } from 'shared'
+import type { ConsultaResumo, NomeFinanceira } from 'shared'
 import type { Consulta, NovaConsulta } from '../../src/domain/entities/consulta'
 import type { Escolha, NovaEscolha } from '../../src/domain/entities/escolha'
 import type { NovoPaciente, Paciente } from '../../src/domain/entities/paciente'
 import type { NovoResultado, ResultadoFinanceira } from '../../src/domain/entities/resultado-financeira'
-import type { ConsultaRepositorio } from '../../src/domain/ports/consulta.repository'
+import type { ConsultaCriada, ConsultaRepositorio } from '../../src/domain/ports/consulta.repository'
 import type { PacienteRepositorio } from '../../src/domain/ports/paciente.repository'
 import type { NovoRefreshToken, RefreshToken } from '../../src/domain/entities/refresh-token'
 import type { Usuario } from '../../src/domain/entities/usuario'
@@ -18,7 +18,7 @@ export class ConsultaRepositorioMemoria implements ConsultaRepositorio {
   nomesPacientes = new Map<string, string>()
 
   async criar(dados: NovaConsulta): Promise<Consulta> {
-    const existente = [...this.consultas.values()].find(c => c.chaveIdempotencia === dados.chaveIdempotencia)
+    const existente = [...this.consultas.values()].find(c => c.usuarioId === dados.usuarioId && c.chaveIdempotencia === dados.chaveIdempotencia)
     if (existente) throw new Error('chave duplicada')
     const consulta: Consulta = { ...dados, id: randomUUID(), status: 'em_andamento', criadaEm: new Date(), finalizadaEm: null }
     this.consultas.set(consulta.id, consulta)
@@ -29,8 +29,20 @@ export class ConsultaRepositorioMemoria implements ConsultaRepositorio {
     return this.consultas.get(id) ?? null
   }
 
-  async buscarPorChave(chave: string) {
-    return [...this.consultas.values()].find(c => c.chaveIdempotencia === chave) ?? null
+  async criarCompleta(paciente: NovoPaciente, consulta: Omit<NovaConsulta, 'pacienteId'>, financeiras: NomeFinanceira[]): Promise<ConsultaCriada> {
+    const pacienteCriado: Paciente = { ...paciente, id: randomUUID(), criadoEm: new Date() }
+    const consultaCriada = await this.criar({ ...consulta, pacienteId: pacienteCriado.id })
+    this.nomesPacientes.set(pacienteCriado.id, pacienteCriado.nome)
+    await this.gravarResultados(financeiras.map(f => ({ consultaId: consultaCriada.id, financeira: f, status: 'consultando', motivo: null, valorAprovado: null, taxaMensal: null, prazos: [], duracaoMs: null, respondidoEm: null })))
+    return { consulta: consultaCriada, paciente: pacienteCriado }
+  }
+
+  async buscarPorChave(usuarioId: string, chave: string) {
+    return [...this.consultas.values()].find(c => c.usuarioId === usuarioId && c.chaveIdempotencia === chave) ?? null
+  }
+
+  async listarEmAndamentoAntesDe(limite: Date) {
+    return [...this.consultas.values()].filter(c => c.status === 'em_andamento' && c.criadaEm < limite)
   }
 
   async listar(usuarioId: string): Promise<ConsultaResumo[]> {
@@ -62,6 +74,12 @@ export class ConsultaRepositorioMemoria implements ConsultaRepositorio {
 
   async gravarResultados(lista: NovoResultado[]) {
     for (const dados of lista) await this.gravarResultado(dados)
+  }
+
+  async concluirResultado(dados: NovoResultado): Promise<ResultadoFinanceira | null> {
+    const atual = (this.resultadosPorConsulta.get(dados.consultaId) ?? []).find(r => r.financeira === dados.financeira)
+    if (!atual || atual.status !== 'consultando') return null
+    return this.gravarResultado(dados)
   }
 
   async finalizar(id: string, finalizadaEm: Date) {

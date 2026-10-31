@@ -32,7 +32,6 @@ export function renovarToken(): Promise<LoginResposta | null> {
         definirToken(sessao.accessToken)
         return sessao
       })
-      .catch(() => null)
       .finally(() => {
         renovacaoEmCurso = null
       })

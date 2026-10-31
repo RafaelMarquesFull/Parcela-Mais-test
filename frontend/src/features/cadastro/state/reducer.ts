@@ -52,7 +52,7 @@ export type Acao =
 export function reducer(estado: EstadoCadastro, acao: Acao): EstadoCadastro {
   switch (acao.tipo) {
     case 'alterar':
-      return { ...estado, valores: { ...estado.valores, [acao.campo]: acao.valor }, erroEnvio: null }
+      return { ...estado, valores: { ...estado.valores, [acao.campo]: acao.valor }, erroEnvio: null, chaveEnvio: null }
     case 'tocar':
       return { ...estado, tocados: { ...estado.tocados, [acao.campo]: true } }
     case 'tocarPasso':

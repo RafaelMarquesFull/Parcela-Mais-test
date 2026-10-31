@@ -28,7 +28,7 @@ describe('PrismaConsultaRepositorio', () => {
     const chave = crypto.randomUUID()
     const { consulta } = await novaConsulta(chave)
     expect(await consultas.buscarPorId(consulta.id)).toMatchObject({ status: 'em_andamento', cenario: 'aleatorio', valorTratamento: 800_000 })
-    expect((await consultas.buscarPorChave(chave))?.id).toBe(consulta.id)
+    expect((await consultas.buscarPorChave(usuarioSemeado.id, chave))?.id).toBe(consulta.id)
     expect(await consultas.buscarPorId('nao-existe')).toBeNull()
   })
 

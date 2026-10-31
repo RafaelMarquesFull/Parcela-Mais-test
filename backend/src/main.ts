@@ -7,7 +7,10 @@ const env = carregarEnv()
 const prisma = criarPrismaClient(env.DATABASE_URL)
 await prepararSqlite(prisma)
 const container = criarContainer({ env, prisma })
-const app = criarApp({ env, container })
+const app = criarApp({ env, container, logger: true })
+
+const presas = await container.finalizarConsultasPresas.executar()
+if (presas > 0) app.log.warn({ presas }, 'consultas presas finalizadas ao subir')
 
 app.listen({ port: env.PORT, host: '0.0.0.0' }).catch(erro => {
   app.log.error(erro)

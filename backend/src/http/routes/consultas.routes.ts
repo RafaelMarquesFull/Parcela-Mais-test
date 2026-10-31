@@ -20,12 +20,12 @@ export async function consultasRoutes(app: FastifyInstance, opcoes: { container:
   app.get('/consultas', async request => container.listarConsultas.executar(request.usuario.id))
 
   app.get<{ Params: { id: string } }>('/consultas/:id', async request => {
-    return apresentarConsulta(await container.obterConsulta.executar(request.params.id))
+    return apresentarConsulta(await container.obterConsulta.executar(request.params.id, request.usuario.id))
   })
 
   app.get<{ Params: { id: string } }>('/consultas/:id/eventos', async (request, reply) => {
     const { id } = request.params
-    await container.obterConsulta.executar(id)
+    await container.obterConsulta.executar(id, request.usuario.id)
     const stream = iniciarStream(reply)
 
     const encerrar = () => {
@@ -38,7 +38,7 @@ export async function consultasRoutes(app: FastifyInstance, opcoes: { container:
     })
     request.raw.on('close', encerrar)
 
-    const atual = await container.obterConsulta.executar(id)
+    const atual = await container.obterConsulta.executar(id, request.usuario.id)
     for (const resultado of atual.resultados.filter(r => r.status !== 'consultando')) {
       stream.enviar({ tipo: 'resultado', resultado: apresentarResultado(resultado) }, resultado.id)
     }
@@ -51,7 +51,7 @@ export async function consultasRoutes(app: FastifyInstance, opcoes: { container:
 
   app.put<{ Params: { id: string } }>('/consultas/:id/escolha', async request => {
     const entrada = escolhaSchema.parse(request.body)
-    const escolha = await container.escolherOferta.executar(request.params.id, entrada)
+    const escolha = await container.escolherOferta.executar(request.params.id, request.usuario.id, entrada)
     const resultados = await container.consultas.resultados(request.params.id)
     return apresentarEscolha(escolha, resultados)
   })

@@ -48,7 +48,7 @@ model Consulta {
   pacienteId        String
   valorTratamento   Int
   cenario           String
-  chaveIdempotencia String                @unique
+  chaveIdempotencia String
   status            String
   criadaEm          DateTime              @default(now())
   finalizadaEm      DateTime?
@@ -56,6 +56,8 @@ model Consulta {
   paciente          Paciente              @relation(fields: [pacienteId], references: [id])
   resultados        ResultadoFinanceira[]
   escolha           Escolha?
+
+  @@unique([usuarioId, chaveIdempotencia])
 }
 
 model ResultadoFinanceira {

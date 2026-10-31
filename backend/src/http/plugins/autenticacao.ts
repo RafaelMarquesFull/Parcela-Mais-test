@@ -16,7 +16,7 @@ function extrairToken(request: FastifyRequest): string | null {
   const cabecalho = request.headers.authorization
   if (cabecalho?.startsWith('Bearer ')) return cabecalho.slice(7)
   const query = request.query as { token?: unknown }
-  if (request.url.includes('/eventos') && typeof query.token === 'string') return query.token
+  if (request.routeOptions.url === '/consultas/:id/eventos' && typeof query.token === 'string') return query.token
   return null
 }
 

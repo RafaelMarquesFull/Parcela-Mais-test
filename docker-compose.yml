@@ -11,7 +11,7 @@ services:
       SIMULACAO_CENARIOS: "true"
       LIMITE_CONCORRENCIA: 5
       RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-100}
-      JWT_SECRET: ${JWT_SECRET:-troque-este-segredo}
+      JWT_SECRET: ${JWT_SECRET:-segredo-so-para-demonstracao-local}
       ORIGEM_FRONT: http://localhost:5173
     volumes:
       - dados:/app/data

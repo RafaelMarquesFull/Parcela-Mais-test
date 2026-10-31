@@ -2,6 +2,7 @@ import type { PrismaClient } from '@prisma/client'
 import type { NomeFinanceira } from 'shared'
 import { CriarConsulta } from './application/consultas/criar-consulta'
 import { EscolherOferta } from './application/consultas/escolher-oferta'
+import { FinalizarConsultasPresas } from './application/consultas/finalizar-consultas-presas'
 import { ListarConsultas } from './application/consultas/listar-consultas'
 import { ObterConsulta } from './application/consultas/obter-consulta'
 import { OrquestradorDeConsulta } from './application/consultas/orquestrar-consulta'
@@ -68,7 +69,8 @@ export function criarContainer(opcoes: Opcoes) {
     eventos,
     limitadores,
     orquestrador,
-    criarConsulta: new CriarConsulta({ consultas, pacientes, orquestrador, simulacaoHabilitada: env.SIMULACAO_CENARIOS, registrarErro }),
+    criarConsulta: new CriarConsulta({ consultas, financeiras, orquestrador, simulacaoHabilitada: env.SIMULACAO_CENARIOS, registrarErro }),
+    finalizarConsultasPresas: new FinalizarConsultasPresas({ consultas, eventos, relogio, prazoMs: PRAZO_CONSULTA_MS }),
     obterConsulta: new ObterConsulta(consultas, pacientes),
     listarConsultas: new ListarConsultas(consultas),
     escolherOferta: new EscolherOferta(consultas),

@@ -19,6 +19,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let ativo = true
     renovarToken()
+      .catch(() => null)
       .then(sessao => {
         if (ativo) setUsuario(sessao?.usuario ?? null)
       })

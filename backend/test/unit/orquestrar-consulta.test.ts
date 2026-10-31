@@ -104,6 +104,21 @@ describe('OrquestradorDeConsulta', () => {
     expect(recebidos.filter(e => e.tipo === 'resultado' && e.resultado.financeira === 'delta')[0]).toMatchObject({ resultado: { status: 'indisponivel' } })
   })
 
+  it('resposta que chega no exato instante do corte gera um único evento e um único estado', async () => {
+    const ctx = montar()
+    const { consulta, paciente, recebidos } = await novaConsulta(ctx)
+    ctx.fakes.delta.respondeEm(PRAZO, aprovada)
+    const execucao = ctx.orquestrador.executar(consulta, paciente)
+    await vi.advanceTimersByTimeAsync(PRAZO)
+    await execucao
+    await vi.advanceTimersByTimeAsync(10)
+    const eventosDelta = recebidos.filter(e => e.tipo === 'resultado' && e.resultado.financeira === 'delta')
+    expect(eventosDelta).toHaveLength(1)
+    const gravado = (await ctx.consultas.resultados(consulta.id)).find(r => r.financeira === 'delta')
+    expect(eventosDelta[0]).toMatchObject({ resultado: { status: gravado?.status } })
+    expect(recebidos.at(-1)?.tipo).toBe('consulta-finalizada')
+  })
+
   it('fila cheia grava indisponivel/fila_cheia sem esperar', async () => {
     const ctx = montar(1)
     await ctx.limitadores.alfa.adquirir(PRAZO)
