@@ -26,10 +26,10 @@ const indisponivel = (motivo: NovoResultado['motivo']): Desfecho => ({ ...consul
 export class OrquestradorDeConsulta {
   constructor(private readonly deps: Dependencias) {}
 
-  async prepararResultados(consultaId: string): Promise<void> {
-    for (const financeira of this.deps.financeiras) {
-      await this.deps.consultas.gravarResultado({ consultaId, financeira: financeira.nome, ...consultando, duracaoMs: null, respondidoEm: null })
-    }
+  prepararResultados(consultaId: string): Promise<void> {
+    return this.deps.consultas.gravarResultados(
+      this.deps.financeiras.map(f => ({ consultaId, financeira: f.nome, ...consultando, duracaoMs: null, respondidoEm: null })),
+    )
   }
 
   async executar(consulta: Consulta, paciente: Paciente): Promise<void> {

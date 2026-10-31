@@ -10,6 +10,7 @@ export interface ConsultaRepositorio {
   listar(usuarioId: string): Promise<ConsultaResumo[]>
   resultados(consultaId: string): Promise<ResultadoFinanceira[]>
   gravarResultado(dados: NovoResultado): Promise<ResultadoFinanceira>
+  gravarResultados(lista: NovoResultado[]): Promise<void>
   finalizar(id: string, finalizadaEm: Date): Promise<void>
   escolha(consultaId: string): Promise<Escolha | null>
   gravarEscolha(dados: NovaEscolha): Promise<Escolha>

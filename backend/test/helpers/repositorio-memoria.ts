@@ -60,6 +60,10 @@ export class ConsultaRepositorioMemoria implements ConsultaRepositorio {
     return registro
   }
 
+  async gravarResultados(lista: NovoResultado[]) {
+    for (const dados of lista) await this.gravarResultado(dados)
+  }
+
   async finalizar(id: string, finalizadaEm: Date) {
     const consulta = this.consultas.get(id)
     if (consulta) this.consultas.set(id, { ...consulta, status: 'finalizada', finalizadaEm })

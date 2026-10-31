@@ -1,10 +1,11 @@
 import { criarApp } from './app'
 import { carregarEnv } from './config/env'
 import { criarContainer } from './container'
-import { criarPrismaClient } from './infra/database/prisma-client'
+import { criarPrismaClient, prepararSqlite } from './infra/database/prisma-client'
 
 const env = carregarEnv()
 const prisma = criarPrismaClient(env.DATABASE_URL)
+await prepararSqlite(prisma)
 const container = criarContainer({ env, prisma })
 const app = criarApp({ env, container })
 

@@ -58,6 +58,10 @@ export class PrismaConsultaRepositorio implements ConsultaRepositorio {
     return paraResultado(linha)
   }
 
+  async gravarResultados(lista: NovoResultado[]): Promise<void> {
+    await this.prisma.resultadoFinanceira.createMany({ data: lista.map(r => ({ ...r, prazos: JSON.stringify(r.prazos) })) })
+  }
+
   async finalizar(id: string, finalizadaEm: Date): Promise<void> {
     await this.prisma.consulta.update({ where: { id }, data: { status: 'finalizada', finalizadaEm } })
   }

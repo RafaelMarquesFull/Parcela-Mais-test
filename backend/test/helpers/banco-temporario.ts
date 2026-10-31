@@ -3,7 +3,7 @@ import { readdirSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { PrismaClient } from '@prisma/client'
-import { criarPrismaClient } from '../../src/infra/database/prisma-client'
+import { criarPrismaClient, prepararSqlite } from '../../src/infra/database/prisma-client'
 
 const pastaMigracoes = join(import.meta.dirname, '../../prisma/migrations')
 
@@ -13,6 +13,7 @@ export async function criarBancoTemporario(): Promise<{ prisma: PrismaClient; ur
   const arquivo = join(tmpdir(), `parcela-mais-${randomUUID()}.db`)
   const url = `file:${arquivo}`
   const prisma = criarPrismaClient(url)
+  await prepararSqlite(prisma)
   for (const pasta of readdirSync(pastaMigracoes).filter(p => !p.endsWith('.toml')).sort()) {
     const sql = readFileSync(join(pastaMigracoes, pasta, 'migration.sql'), 'utf8')
     for (const comando of sql.split(';').map(c => c.trim()).filter(Boolean)) await prisma.$executeRawUnsafe(comando)
