@@ -154,3 +154,5 @@ vite.config.ts.timestamp-*
 data/
 .playwright-mcp/
 docs/
+Captura de Tela*.png
+*.pdf
